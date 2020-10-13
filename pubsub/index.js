@@ -3,11 +3,8 @@ const { Datastore } = require("@google-cloud/datastore");
 const { google } = require("googleapis");
 const gmail = google.gmail("v1");
 const googleSheets = google.sheets("v4");
-const vision = require("@google-cloud/vision");
 const { MongoClient } = require("mongodb");
-
 const datastoreClient = new Datastore();
-const visionClient = new vision.ImageAnnotatorClient();
 
 const SHEET = process.env.GOOGLE_SHEET_ID;
 const SHEET_RANGE = "Sheet1!A1:F1";
@@ -96,22 +93,6 @@ const extractAttachmentFromMessage = async (email, messageId, attachmentId) => {
     messageId: messageId,
     userId: email,
   });
-};
-
-// Tag the attachment using Cloud Vision API
-const analyzeAttachment = async (data, filename) => {
-  var topLabels = ["", "", ""];
-  if (filename.endsWith(".png") || filename.endsWith(".jpg")) {
-    const [analysis] = await visionClient.labelDetection({
-      image: {
-        content: Buffer.from(data, "base64"),
-      },
-    });
-    const labels = analysis.labelAnnotations;
-    topLabels = labels.map((x) => x.description).slice(0, 3);
-  }
-
-  return topLabels;
 };
 
 // Write sender, attachment filename, and download link to a Google Sheet.
